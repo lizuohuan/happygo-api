@@ -14,6 +14,7 @@ import com.magicbeans.happygo.util.CommonUtil;
 import com.magicbeans.happygo.util.StatusConstant;
 import com.magicbeans.happygo.util.TextMessage;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  */
 @RestController
 @RequestMapping("/user")
-@Api(value = "user", description = "用户管理接口")
+@Api(value = "用户管理接口")
 public class UserController extends BaseController {
 
     @Resource
@@ -42,8 +43,9 @@ public class UserController extends BaseController {
     private RedisService redisService;
 
 
-    @RequestMapping(value = "/sendCode/{phone}")
+    @RequestMapping(value = "/sendCode/{phone}",method = RequestMethod.POST)
     @ApiOperation(value = "注册发送验证码",notes = "验证码的正确性由服务端验证，移动端暂不用验证")
+    @ApiImplicitParam(name = "phone",value = "手机号码" ,required = true)
     public ResponseData sendMsg(@PathVariable(value = "phone") String phone){
 
         if(CommonUtil.isEmpty(phone)){

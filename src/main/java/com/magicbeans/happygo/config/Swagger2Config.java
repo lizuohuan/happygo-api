@@ -30,7 +30,7 @@ public class Swagger2Config {
         return new ApiInfoBuilder()
                 .title("魔豆互动接口测试环境")
                 .description("接口测试工具")
-                .contact("研发部")
+                .contact("同路人团队")
                 .version("1.0")
                 .build();
     }
