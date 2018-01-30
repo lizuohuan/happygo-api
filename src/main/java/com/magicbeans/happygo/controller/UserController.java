@@ -5,12 +5,23 @@ import com.magicbeans.base.Pages;
 import com.magicbeans.base.ajax.ResponseData;
 import com.magicbeans.happygo.controller.base.BaseController;
 import com.magicbeans.happygo.entity.Admin;
+import com.magicbeans.happygo.entity.User;
+import com.magicbeans.happygo.redis.RedisService;
 import com.magicbeans.happygo.service.IAdminService;
+import com.magicbeans.happygo.service.IUserService;
+import com.magicbeans.happygo.sms.SMSCode;
+import com.magicbeans.happygo.util.CommonUtil;
+import com.magicbeans.happygo.util.StatusConstant;
+import com.magicbeans.happygo.util.TextMessage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.text.MessageFormat;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -21,64 +32,35 @@ import org.springframework.web.bind.annotation.*;
  * @since 2017-07-28
  */
 @RestController
-@RequestMapping("user")
-@Api(value = "user", description = "用户管理")
+@RequestMapping("/user")
+@Api(value = "user", description = "用户管理接口")
 public class UserController extends BaseController {
 
-    @Autowired
-    private IAdminService adminService;
+    @Resource
+    private IUserService userService;
+    @Resource
+    private RedisService redisService;
 
 
-    /**
-     * 分页查询
-     * @param pages
-     * @return
-     */
-    @RequestMapping(value = "list")
-    @ApiOperation(value = "测试接口")
-    public ResponseData adminList(Pages<Admin> pages) {
-        return ResponseData.success(adminService.findPage(pages, null, null));
-    }
+    @RequestMapping(value = "/sendCode/{phone}")
+    @ApiOperation(value = "注册发送验证码",notes = "验证码的正确性由服务端验证，移动端暂不用验证")
+    public ResponseData sendMsg(@PathVariable(value = "phone") String phone){
 
-
-    /**
-     * 根据Id删除
-     * @param id
-     * @return
-     */
-    @ApiOperation(value = "根据ID删除")
-    @RequestMapping(value = "del/{id}")
-    public ResponseData deleteById(@PathVariable String id) {
-        adminService.delete(id);
-        return ResponseData.success();
-    }
-
-    /**
-     * 根据ID查询实体
-     * @param id
-     * @return
-     */
-    @ApiOperation(value = "根据ID查询实体")
-    @RequestMapping(value = "get/{id}")
-    public ResponseData findById(@PathVariable String id){
-        return ResponseData.success(adminService.find(id));
-    }
-
-
-    /**
-     * 增加修改
-     * @param admin
-     * @return
-     */
-    @ApiOperation(value = "增加修改")
-    @RequestMapping(value = "save")
-    public ResponseData save(@RequestBody  Admin admin){
-        if(StringUtils.isEmpty(admin.getId())){
-            adminService.save(admin);
-        }else{
-            adminService.update(admin);
+        if(CommonUtil.isEmpty(phone)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
         }
-        return ResponseData.success();
+        User user = userService.getUserByPhone(phone);
+        if(null != user){
+            return buildFailureJson(StatusConstant.OBJECT_EXIST,"手机号已经存在");
+        }
+        String code = SMSCode.createRandomCode();
+        String msg = MessageFormat.format(TextMessage.MSG_CODE, code);
+        boolean isSuccess = SMSCode.sendMessage(msg, phone);
+        if(!isSuccess){
+            return buildFailureJson(StatusConstant.Fail_CODE,"发送失败");
+        }
+        redisService.set(TextMessage.REDIS_KEY_PREFIX + phone,code,TextMessage.EXPIRE_TIME, TimeUnit.MINUTES);
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"发送成功",code);
     }
 
 
