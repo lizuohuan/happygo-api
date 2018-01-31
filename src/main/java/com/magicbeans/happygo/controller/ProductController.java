@@ -88,7 +88,7 @@ public class ProductController extends BaseController {
      * @return
      */
     @RequestMapping(value = "list")
-    public ResponseData list(Pages<Product> page, String name , String number , Integer productCategoryId,
+    public ResponseData list(Pages<Product> page, String name , String number , String productCategoryId,
                              Integer isPromotion , Integer isIntegral , Integer isHot ,
                              Long createTimeStart , Long createTimeEnd){
         List<Filter> filters = new ArrayList<>();
@@ -135,13 +135,13 @@ public class ProductController extends BaseController {
      * @param productCategoryList
      * @return
      */
-    private String getProductCategoryName(Integer productCategoryId,List<ProductCategory> productCategoryList) {
+    private String getProductCategoryName(String productCategoryId,List<ProductCategory> productCategoryList) {
         String productCategoryName = "";
         for (ProductCategory category : productCategoryList) {
             if (category.getId().equals(productCategoryId)) {
                 productCategoryName = category.getName();
                 if (null != category.getParentId() ) {
-                    productCategoryName = getProductCategoryName(productCategoryId,productCategoryList) + "," + productCategoryName;
+                    productCategoryName = getProductCategoryName(category.getParentId(),productCategoryList) + "," + productCategoryName;
                 }
                 break;
             }
