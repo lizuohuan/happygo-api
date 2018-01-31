@@ -88,7 +88,7 @@ public class ProductController extends BaseController {
      * @return
      */
     @RequestMapping(value = "list")
-    public ResponseData list(Pages<Product> page, String name , String number , Integer productCategoryId,
+    public ResponseData list(Pages<Product> page, String name , String number , String productCategoryId,
                              Integer isPromotion , Integer isIntegral , Integer isHot ,
                              Long createTimeStart , Long createTimeEnd){
         List<Filter> filters = new ArrayList<>();
