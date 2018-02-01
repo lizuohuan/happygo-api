@@ -135,13 +135,13 @@ public class ProductController extends BaseController {
      * @param productCategoryList
      * @return
      */
-    private String getProductCategoryName(Integer productCategoryId,List<ProductCategory> productCategoryList) {
+    private String getProductCategoryName(String productCategoryId,List<ProductCategory> productCategoryList) {
         String productCategoryName = "";
         for (ProductCategory category : productCategoryList) {
             if (category.getId().equals(productCategoryId)) {
                 productCategoryName = category.getName();
                 if (null != category.getParentId() ) {
-                    productCategoryName = getProductCategoryName(productCategoryId,productCategoryList) + "," + productCategoryName;
+                    productCategoryName = getProductCategoryName(category.getParentId(),productCategoryList) + "," + productCategoryName;
                 }
                 break;
             }
