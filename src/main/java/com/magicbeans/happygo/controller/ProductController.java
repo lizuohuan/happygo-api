@@ -10,9 +10,14 @@ import com.magicbeans.happygo.entity.Product;
 import com.magicbeans.happygo.entity.ProductCategory;
 import com.magicbeans.happygo.service.IProductCategoryService;
 import com.magicbeans.happygo.service.IProductService;
+import com.magicbeans.happygo.util.CommonUtil;
 import com.magicbeans.happygo.util.StatusConstant;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -24,7 +29,7 @@ import java.util.*;
  * @create 2018/1/30 15:50
  */
 @RestController
-@RequestMapping("/product/")
+@RequestMapping("/product")
 public class ProductController extends BaseController {
 
     @Resource
@@ -35,11 +40,9 @@ public class ProductController extends BaseController {
 
 
 
-    /**
-     * 主页分类商品
-     * @return
-     */
-    @RequestMapping(value = "index")
+
+    @RequestMapping(value = "/index",method = RequestMethod.POST)
+    @ApiOperation(value = "商品列表首页")
     public ResponseData index(){
         List<Filter> filters = new ArrayList<>();
         filters.add(Filter.or(
@@ -72,44 +75,25 @@ public class ProductController extends BaseController {
         map.put("integralList",integralList);
         map.put("hotList",hotList);
         map.put("promotionList",promotionList);
-        //获取全部商品分类
-//        List<ProductCategory> productCategoryList = productCategoryService.findAll();
-//        for (Product product : productList) {
-//            //设置商品分类名
-//            product.setProductCategoryName(getProductCategoryName(product.getProductCategoryId(),productCategoryList));
-//        }
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",map);
     }
 
 
-    /**
-     * 商品列表
-     * @param page
-     * @return
-     */
-    @RequestMapping(value = "list")
-    public ResponseData list(Pages<Product> page, String name , String number , String productCategoryId,
-                             Integer isPromotion , Integer isIntegral , Integer isHot ,
-                             Long createTimeStart , Long createTimeEnd){
-        List<Filter> filters = new ArrayList<>();
-        filters.add(Filter.like("name",name));
-        filters.add(Filter.like("number",number));
-        filters.add(Filter.eq("productCategoryId",productCategoryId));
-        filters.add(Filter.eq("isPromotion",isPromotion));
-        filters.add(Filter.eq("isIntegral",isIntegral));
-        filters.add(Filter.eq("isHot",isHot));
-        filters.add(Filter.between("create_time",new Date(createTimeStart),new Date(createTimeEnd)));
-        List<Order> orders = new ArrayList<>();
-        orders.add(Order.desc("id"));
-        page = productService.findPage(page,filters,orders);
 
-        //获取全部商品分类
-        List<ProductCategory> productCategoryList = productCategoryService.findAll();
-        for (Product product : page.getRecords()) {
-            //设置商品分类名
-            product.setProductCategoryName(getProductCategoryName(product.getProductCategoryId(),productCategoryList));
-        }
-        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",page);
+    @RequestMapping(value = "/searchProduct",method = RequestMethod.POST)
+    @ApiOperation(value = "搜索商品列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "productName",value = "商品名称"),
+            @ApiImplicitParam(name = "pageNO",value = "分页参数",required = true),
+            @ApiImplicitParam(name = "pageSize",value = "分页参数",required = true)
+    })
+    public ResponseData searchProduct(String productName,Integer pageNO,Integer pageSize){
+       if(CommonUtil.isEmpty(pageNO,pageSize)){
+           return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+       }
+        productName = CommonUtil.isEmpty(productName) ? null : productName;
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                productService.searchProduct(productName, pageNO, pageSize));
     }
 
 
@@ -121,7 +105,6 @@ public class ProductController extends BaseController {
      */
     @GetMapping("info")
     public ResponseData info(String id) {
-//        List<ProductCategory> parentList = getProductCategories();
 
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",productService.find(id));
     }

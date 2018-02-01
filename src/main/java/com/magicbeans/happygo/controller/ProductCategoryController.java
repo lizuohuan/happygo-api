@@ -6,7 +6,9 @@ import com.magicbeans.happygo.entity.ProductCategory;
 import com.magicbeans.happygo.service.IProductCategoryService;
 import com.magicbeans.happygo.util.StatusConstant;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -19,7 +21,7 @@ import java.util.List;
  * @create 2018/1/30 16:37
  */
 @RestController
-@RequestMapping("/productCategory/")
+@RequestMapping("/productCategory")
 @Api(description = "商品分类接口")
 public class ProductCategoryController extends BaseController {
 
@@ -30,7 +32,8 @@ public class ProductCategoryController extends BaseController {
      * 封装商品分类
      * @return
      */
-    @RequestMapping("getProductCategorylist")
+    @RequestMapping(value = "/getProductCategoryList",method = RequestMethod.POST)
+    @ApiOperation(value = "获取商品分类")
     public ResponseData list() {
         //获取全部商品分类
         List<ProductCategory> productCategoryList = productCategoryService.findAll();
@@ -40,7 +43,7 @@ public class ProductCategoryController extends BaseController {
             if (null == productCategoryList.get(i).getParentId()) {
                 parentList.add(productCategoryList.get(i));
                 productCategoryList.remove(i);
-                i --;
+                i--;
             }
         }
         for (ProductCategory category : parentList) {
@@ -48,7 +51,7 @@ public class ProductCategoryController extends BaseController {
                 if (category.getId().equals(productCategoryList.get(i).getParentId())) {
                     category.getChildList().add(productCategoryList.get(i));
                     productCategoryList.remove(i);
-                    i -- ;
+                    i-- ;
                 }
             }
         }
