@@ -1,10 +1,8 @@
 package com.magicbeans.happygo.controller;
 
-import com.magicbeans.base.Pages;
 import com.magicbeans.base.ajax.ResponseData;
 import com.magicbeans.base.db.Filter;
 import com.magicbeans.base.db.Order;
-import com.magicbeans.happygo.Message;
 import com.magicbeans.happygo.controller.base.BaseController;
 import com.magicbeans.happygo.entity.Product;
 import com.magicbeans.happygo.entity.ProductCategory;
@@ -12,6 +10,7 @@ import com.magicbeans.happygo.service.IProductCategoryService;
 import com.magicbeans.happygo.service.IProductService;
 import com.magicbeans.happygo.util.CommonUtil;
 import com.magicbeans.happygo.util.StatusConstant;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -30,19 +29,15 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/product")
+@Api(description = "商品管理")
 public class ProductController extends BaseController {
 
     @Resource
     private IProductService productService;
 
-    @Resource
-    private IProductCategoryService productCategoryService;
-
-
-
 
     @RequestMapping(value = "/index",method = RequestMethod.POST)
-    @ApiOperation(value = "商品列表首页")
+    @ApiOperation(value = "商品列表首页",notes = "integralList:积分商品,hotList:推荐商品,promotionList:促销商品")
     public ResponseData index(){
         List<Filter> filters = new ArrayList<>();
         filters.add(Filter.or(
@@ -80,6 +75,10 @@ public class ProductController extends BaseController {
 
 
 
+
+
+
+
     @RequestMapping(value = "/searchProduct",method = RequestMethod.POST)
     @ApiOperation(value = "搜索商品列表")
     @ApiImplicitParams({
@@ -103,11 +102,40 @@ public class ProductController extends BaseController {
      * @param id
      * @return
      */
-    @GetMapping("info")
+    @RequestMapping(value = "/info",method = RequestMethod.POST)
+    @ApiOperation(value = "获取商品详情")
+    @ApiImplicitParam(name = "id",value = "商品ID",required = true)
     public ResponseData info(String id) {
-
-        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",productService.find(id));
+        if(CommonUtil.isEmpty(id)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                productService.find(id));
     }
+
+
+
+
+    @RequestMapping(value = "/getProduct",method = RequestMethod.POST)
+    @ApiOperation(value = "获取商品列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "productCategoryId",value = "分类ID"),
+            @ApiImplicitParam(name = "isPromotion",value = "如需获取促销商品 固定传值：1"),
+            @ApiImplicitParam(name = "isIntegral",value = "如需获取积分商品 固定传值：1"),
+            @ApiImplicitParam(name = "isHot",value = "如需获取热门|推荐商品 固定传值：1"),
+            @ApiImplicitParam(name = "pageNO",value = "分页参数 起始 1",required = true),
+            @ApiImplicitParam(name = "pageSize",value = "分页参数 ",required = true)
+    })
+    public ResponseData getProduct(String productCategoryId,Integer isPromotion,
+                                   Integer isIntegral,Integer isHot,Integer pageNO,Integer pageSize){
+        if(CommonUtil.isEmpty(pageNO,pageSize)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                productService.getProduct(productCategoryId,isPromotion,isIntegral,isHot,pageNO,pageSize));
+
+    }
+
 
 
 

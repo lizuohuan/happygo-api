@@ -12,10 +12,7 @@ import com.magicbeans.happygo.service.IAdminService;
 import com.magicbeans.happygo.service.IIncomeDetailService;
 import com.magicbeans.happygo.service.IUserService;
 import com.magicbeans.happygo.sms.SMSCode;
-import com.magicbeans.happygo.util.CommonUtil;
-import com.magicbeans.happygo.util.LoginHelper;
-import com.magicbeans.happygo.util.StatusConstant;
-import com.magicbeans.happygo.util.TextMessage;
+import com.magicbeans.happygo.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -100,6 +97,7 @@ public class UserController extends BaseController {
         r.setPwd(pwd);
         r.setDeviceToken(deviceToken);
         r.setDeviceType(deviceType);
+        r.setRoleId(RoleConstant.REGULAR_MEMBERS);
         userService.save(r);
 
         String token = UUID.randomUUID().toString().replaceAll("-", "");

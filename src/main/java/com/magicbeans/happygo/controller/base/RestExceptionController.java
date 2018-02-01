@@ -1,6 +1,7 @@
 package com.magicbeans.happygo.controller.base;
 
 import com.magicbeans.base.ajax.ResponseData;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.boot.autoconfigure.web.ErrorController;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
+@Api(hidden = true)
 public class RestExceptionController implements ErrorController {
 
     private ErrorAttributes errorAttributes;
