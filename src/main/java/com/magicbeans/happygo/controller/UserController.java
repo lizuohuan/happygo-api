@@ -9,6 +9,7 @@ import com.magicbeans.happygo.entity.User;
 import com.magicbeans.happygo.exception.InterfaceCommonException;
 import com.magicbeans.happygo.redis.RedisService;
 import com.magicbeans.happygo.service.IAdminService;
+import com.magicbeans.happygo.service.IIncomeDetailService;
 import com.magicbeans.happygo.service.IUserService;
 import com.magicbeans.happygo.sms.SMSCode;
 import com.magicbeans.happygo.util.CommonUtil;
@@ -45,6 +46,8 @@ public class UserController extends BaseController {
     private IUserService userService;
     @Resource
     private RedisService redisService;
+    @Resource
+    private IIncomeDetailService incomeDetailService;
 
 
     @RequestMapping(value = "/sendCode",method = RequestMethod.POST)
@@ -201,8 +204,55 @@ public class UserController extends BaseController {
             logger.error(e.getMessage(),e);
             return buildFailureJson(StatusConstant.Fail_CODE,"设置失败");
         }
+    }
+
+
+    @RequestMapping(value = "/getDistributionUser",method = RequestMethod.POST)
+    @ApiOperation(value = "获取当前分销用户",notes = "返回格式：{'one':[],'two':[],'three':[]}")
+    public ResponseData getDistributionUser(){
+        try {
+            User user = LoginHelper.getCurrentUser(redisService);
+            return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                    userService.getDistributionUser(user.getId(),null,null));
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"设置失败");
+        }
+    }
+
+
+
+    @RequestMapping(value = "/getIncomeDetail",method = RequestMethod.POST)
+    @ApiOperation(value = "获取收益明细集合")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "fromUserId",value = "明细来源用户ID",required = true),
+            @ApiImplicitParam(name = "pageNO",value = "分页参数 从 1 开始",required = true),
+            @ApiImplicitParam(name = "pageSize",value = "分页参数",required = true)
+    })
+    public ResponseData getIncomeDetail(String fromUserId,Integer pageNO,Integer pageSize){
+
+        if(CommonUtil.isEmpty(fromUserId,pageNO,pageSize)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User user = LoginHelper.getCurrentUser(redisService);
+            return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                    incomeDetailService.getIncomeDetail(fromUserId,user.getId(),pageNO,pageSize));
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"设置失败");
+        }
 
     }
+
+
+
+
+
 
 
 }

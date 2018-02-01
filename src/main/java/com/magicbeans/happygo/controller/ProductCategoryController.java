@@ -5,6 +5,7 @@ import com.magicbeans.happygo.controller.base.BaseController;
 import com.magicbeans.happygo.entity.ProductCategory;
 import com.magicbeans.happygo.service.IProductCategoryService;
 import com.magicbeans.happygo.util.StatusConstant;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/productCategory/")
+@Api(description = "商品分类接口")
 public class ProductCategoryController extends BaseController {
 
     @Resource
@@ -28,7 +30,7 @@ public class ProductCategoryController extends BaseController {
      * 封装商品分类
      * @return
      */
-    @RequestMapping("list")
+    @RequestMapping("getProductCategorylist")
     public ResponseData list() {
         //获取全部商品分类
         List<ProductCategory> productCategoryList = productCategoryService.findAll();
@@ -44,7 +46,7 @@ public class ProductCategoryController extends BaseController {
         for (ProductCategory category : parentList) {
             for (int i = 0; i < productCategoryList.size(); i++) {
                 if (category.getId().equals(productCategoryList.get(i).getParentId())) {
-                    parentList.add(productCategoryList.get(i));
+                    category.getChildList().add(productCategoryList.get(i));
                     productCategoryList.remove(i);
                     i -- ;
                 }
