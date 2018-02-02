@@ -26,6 +26,9 @@ public class LoginHelper {
 	public static User getCurrentUser(RedisService redisService) throws Exception{
 		HttpServletRequest req = ((ServletRequestAttributes)(RequestContextHolder.getRequestAttributes())).getRequest();
 		String token = req.getHeader(TOKEN);
+		if(CommonUtil.isEmpty(token)){
+			throw new InterfaceCommonException(StatusConstant.NOTLOGIN,"未登录");
+		}
 		User user = (User)redisService.get(token);
 		if(null == user){
 			throw new InterfaceCommonException(StatusConstant.NOTLOGIN,"未登录");
