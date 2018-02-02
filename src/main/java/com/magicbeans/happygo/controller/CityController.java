@@ -2,6 +2,8 @@ package com.magicbeans.happygo.controller;
 
 import com.magicbeans.base.ajax.ResponseData;
 import com.magicbeans.happygo.controller.base.BaseController;
+import com.magicbeans.happygo.entity.City;
+import com.magicbeans.happygo.redis.RedisService;
 import com.magicbeans.happygo.service.ICityService;
 import com.magicbeans.happygo.util.StatusConstant;
 import io.swagger.annotations.Api;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Created by Eric Xie on 2018/2/2 0002.
@@ -25,7 +28,8 @@ public class CityController extends BaseController {
 
     @Resource
     private ICityService cityService;
-
+    @Resource
+    private RedisService redisService;
 
 
     @RequestMapping(value = "/getCity",method = RequestMethod.POST)
@@ -43,6 +47,18 @@ public class CityController extends BaseController {
         }
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
                 cityService.getCityByParentId(parentId,levelType));
+    }
+
+    @RequestMapping(value = "/getAllCity",method = RequestMethod.POST)
+    @ApiOperation(value = "获取城市列表")
+    public ResponseData getAllCity() {
+        Object o = redisService.get("AllCity");
+        if(o == null){
+            o = cityService.getAllCity();
+            redisService.set("AllCity",o);
+        }
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                o);
 
     }
 }

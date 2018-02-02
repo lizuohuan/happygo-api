@@ -291,9 +291,25 @@ public class UserController extends BaseController {
             userService.update(userPhone);
         }
         return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"提交成功");
-
     }
 
+
+
+
+    @RequestMapping(value = "/logout",method = RequestMethod.POST)
+    @ApiOperation(value = "牛B的安全退出")
+    public ResponseData logout(){
+        try {
+            User user = LoginHelper.getCurrentUser(redisService);
+            redisService.remove(user.getToken());
+            return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"退出成功");
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"退出成功");
+        }
+    }
 
 
 

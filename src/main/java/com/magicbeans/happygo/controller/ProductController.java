@@ -44,7 +44,7 @@ public class ProductController extends BaseController {
                 Filter.eq("isPromotion",1),
                 Filter.eq("isIntegral",1),
                 Filter.eq("isHot",1)));
-        List<Product> productList = productService.findList(filters,Order.desc("id"));
+        List<Product> productList = productService.findList(filters,Order.desc("create_time"));
 
         Map<String,List<Product>> map = new HashMap<>();
         //积分商品
@@ -54,14 +54,23 @@ public class ProductController extends BaseController {
         //促销商品
         List<Product> promotionList = new ArrayList<>();
         for (Product product : productList) {
+            if(integralList.size() == 3 && hotList.size() == 3 && promotionList.size() == 3){
+                break;
+            }
             if (null != product.getIsIntegral() && product.getIsIntegral() == 1) {
-                integralList.add(product);
+                if(integralList.size() < 3){
+                    integralList.add(product);
+                }
             }
             if (null != product.getIsHot() && product.getIsHot() == 1) {
-                hotList.add(product);
+                if(hotList.size() < 3){
+                    hotList.add(product);
+                }
             }
             if (null != product.getIsPromotion() && product.getIsPromotion() == 1) {
-                promotionList.add(product);
+                if(promotionList.size() < 3){
+                    promotionList.add(product);
+                }
             }
         }
         map.put("integralList",integralList);
