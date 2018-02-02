@@ -56,15 +56,12 @@ public class ProductController extends BaseController {
         for (Product product : productList) {
             if (null != product.getIsIntegral() && product.getIsIntegral() == 1) {
                 integralList.add(product);
-                continue;
             }
             if (null != product.getIsHot() && product.getIsHot() == 1) {
                 hotList.add(product);
-                continue;
             }
             if (null != product.getIsPromotion() && product.getIsPromotion() == 1) {
                 promotionList.add(product);
-                continue;
             }
         }
         map.put("integralList",integralList);

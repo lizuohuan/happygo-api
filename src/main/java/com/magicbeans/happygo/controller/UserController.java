@@ -89,17 +89,27 @@ public class UserController extends BaseController {
             return buildFailureJson(StatusConstant.Fail_CODE,"验证码失效");
         }
         User user = userService.getUserByPhone(phone);
-        if(null != user){
+        if(null != user && !CommonUtil.isEmpty(user.getPwd())){
             return buildFailureJson(StatusConstant.OBJECT_EXIST,"手机号已经存在");
         }
         User r = new User();
-        r.setPhone(phone);
-        r.setPwd(pwd);
-        r.setDeviceToken(deviceToken);
-        r.setDeviceType(deviceType);
-        r.setRoleId(RoleConstant.REGULAR_MEMBERS);
-        userService.save(r);
-
+        if(null == user){
+            r.setPhone(phone);
+            r.setPwd(pwd);
+            r.setDeviceToken(deviceToken);
+            r.setDeviceType(deviceType);
+            r.setRoleId(RoleConstant.REGULAR_MEMBERS);
+            r.setShareCode(ShareCodeUtil.serialCode(Long.parseLong(phone)));
+            userService.save(r);
+        }
+        else{
+            r = user;
+            r.setPwd(pwd);
+            r.setDeviceToken(deviceToken);
+            r.setDeviceType(deviceType);
+            r.setRoleId(RoleConstant.REGULAR_MEMBERS);
+            userService.update(r);
+        }
         String token = UUID.randomUUID().toString().replaceAll("-", "");
         redisService.set(token,r,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
         r.setToken(token);
@@ -244,6 +254,43 @@ public class UserController extends BaseController {
             logger.error(e.getMessage(),e);
             return buildFailureJson(StatusConstant.Fail_CODE,"设置失败");
         }
+    }
+
+
+
+    @RequestMapping(value = "shareCodeRegister",method = RequestMethod.POST)
+    @ApiOperation(value = "分享页注册提交")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "shareCode",value = "邀请码",required = true),
+            @ApiImplicitParam(name = "phone",value = "手机号",required = true)
+    })
+    public ResponseData shareCodeRegister(String shareCode,String phone){
+
+        if(CommonUtil.isEmpty(shareCode,phone)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数错误");
+        }
+
+        User user = userService.getUserByShareCode(shareCode);
+        if(null == user){
+            return buildFailureJson(StatusConstant.Fail_CODE,"邀请码错误");
+        }
+        User userPhone = userService.getUserByPhone(phone);
+        if(null != userPhone && !CommonUtil.isEmpty(userPhone.getParentId())){
+            return buildFailureJson(StatusConstant.Fail_CODE,"已经提交过");
+        }
+        if(null == userPhone){
+            User u = new User();
+            u.setPhone(phone);
+            u.setRoleId(RoleConstant.REGULAR_MEMBERS);
+            u.setParentId(user.getId());
+            u.setShareCode(ShareCodeUtil.serialCode(Long.parseLong(phone)));
+            userService.save(u);
+        }
+        if(null != userPhone && null == userPhone.getParentId()){
+            userPhone.setParentId(user.getId());
+            userService.update(userPhone);
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"提交成功");
 
     }
 
