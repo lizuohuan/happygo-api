@@ -149,6 +149,73 @@ public class OrderController extends BaseController {
     }
 
 
+    @RequestMapping(value = "/underPay",method = RequestMethod.POST)
+    @ApiOperation(value = "提交线下支付",notes = "线下支付的银行流水在此接口不提交，其他接口提交")
+    @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
+    public ResponseData underPay(String orderId){
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            Order order = orderService.find(orderId);
+            if(null == order){
+                return buildFailureJson(StatusConstant.OBJECT_NOT_EXIST,"订单不存在");
+            }
+            if(!currentUser.getId().equals(order.getUserId())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
+            }
+            if(!StatusConstant.ORDER_WAITING_PAY.equals(order.getStatus())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
+            }
+            orderService.underPay(order);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"操作成功");
+    }
+
+
+    @RequestMapping(value = "/uploadBankDetail",method = RequestMethod.POST)
+    @ApiOperation(value = "上传订单的银行明细")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orderId",value = "订单ID",required = true),
+            @ApiImplicitParam(name = "detailImg",value = "银行明细的URL地址",required = true)
+    })
+    public ResponseData uploadBankDetail(String orderId,String detailImg){
+        if(CommonUtil.isEmpty(orderId,detailImg)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            LoginHelper.getCurrentUser(redisService);
+            orderService.uploadBankImg(orderId,detailImg);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"处理成功");
+    }
+
+
+    public ResponseData delOrder(String orderId){
+        if(CommonUtil.isEmpty(orderId)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            LoginHelper.getCurrentUser(redisService);
+
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"处理成功");
+    }
+
+
 
 
 
