@@ -38,12 +38,55 @@ public class OrderController extends BaseController {
     private  IOrderService orderService;
     @Resource
     private RedisService redisService;
-    @Resource
-    private IShopCarService shopCarService;
-    @Resource
-    private IOrderProductService orderProductService;
 
 
+
+    @RequestMapping(value = "/getOrderDetail",method = RequestMethod.POST)
+    @ApiOperation(value = "获取订单详情")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
+    })
+    public ResponseData getOrderDetail(String orderId){
+        if(CommonUtil.isEmpty(orderId)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            LoginHelper.getCurrentUser(redisService);
+            return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                    orderService.getOrderById(orderId));
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"获取失败");
+        }
+    }
+
+
+
+
+    @RequestMapping(value = "/getOrderList",method = RequestMethod.POST)
+    @ApiOperation(value = "获取订单列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orderStatus",value = "订单状态，如果查询全部，则不传值"),
+            @ApiImplicitParam(name = "pageNO",value = "分页参数，起始值  1",required = true),
+            @ApiImplicitParam(name = "pageSize",value = "分页参数",required = true)
+    })
+    public ResponseData getOrderList(Integer orderStatus,Integer pageNO,Integer pageSize){
+        if(CommonUtil.isEmpty(pageNO,pageSize)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
+                    orderService.getOrderList(currentUser.getId(),orderStatus,pageNO,pageSize));
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"获取失败");
+        }
+    }
 
 
 
@@ -199,13 +242,91 @@ public class OrderController extends BaseController {
     }
 
 
+    @RequestMapping(value = "/orderId",method = RequestMethod.POST)
+    @ApiOperation(value = "删除订单")
+    @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
     public ResponseData delOrder(String orderId){
         if(CommonUtil.isEmpty(orderId)){
             return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
         }
         try {
-            LoginHelper.getCurrentUser(redisService);
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            Order order = orderService.find(orderId);
+            if(null == order){
+                return buildFailureJson(StatusConstant.OBJECT_NOT_EXIST,"订单不存在");
+            }
+            if(!currentUser.getId().equals(order.getUserId())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
+            }
+            if(!StatusConstant.ORDER_FINISHED.equals(order.getStatus())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
+            }
+            order.setUserIsValid(StatusConstant.NO);
+            orderService.update(order);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"处理成功");
+    }
 
+
+
+    @RequestMapping(value = "/cancelOrder",method = RequestMethod.POST)
+    @ApiOperation(value = "取消订单")
+    @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
+    public ResponseData cancelOrder(String orderId){
+        if(CommonUtil.isEmpty(orderId)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            Order order = orderService.find(orderId);
+            if(null == order){
+                return buildFailureJson(StatusConstant.OBJECT_NOT_EXIST,"订单不存在");
+            }
+            if(!currentUser.getId().equals(order.getUserId())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
+            }
+            if(!StatusConstant.ORDER_WAITING_PAY.equals(order.getStatus())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
+            }
+            order.setStatus(StatusConstant.ORDER_CANCEL);
+            orderService.update(order);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"处理成功");
+    }
+
+
+    @RequestMapping(value = "/refundOrder",method = RequestMethod.POST)
+    @ApiOperation(value = "申请退款")
+    @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
+    public ResponseData refundOrder(String orderId){
+        if(CommonUtil.isEmpty(orderId)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            Order order = orderService.find(orderId);
+            if(null == order){
+                return buildFailureJson(StatusConstant.OBJECT_NOT_EXIST,"订单不存在");
+            }
+            if(!currentUser.getId().equals(order.getUserId())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
+            }
+            if(!StatusConstant.ORDER_PAID.equals(order.getStatus())
+                    && !StatusConstant.ORDER_WAITING_SEND.equals(order.getStatus())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
+            }
+            order.setStatus(StatusConstant.ORDER_REFUND);
+            orderService.update(order);
         } catch (InterfaceCommonException e) {
             return buildFailureJson(e.getErrorCode(),e.getMessage());
         } catch (Exception e) {
