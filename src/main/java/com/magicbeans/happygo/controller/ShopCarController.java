@@ -63,6 +63,7 @@ public class ShopCarController extends BaseController {
             User currentUser = LoginHelper.getCurrentUser(redisService);
             ShopCar car = shopCarService.getShopCarByUser(currentUser.getId(), shopcar.getProductId());
             if (null == car) {
+                shopcar.setUserId(currentUser.getId());
                 shopCarService.save(shopcar);
             } else {
                 int num = 0;

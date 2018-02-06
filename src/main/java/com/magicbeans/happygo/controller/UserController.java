@@ -1,14 +1,11 @@
 package com.magicbeans.happygo.controller;
 
 
-import com.magicbeans.base.Pages;
 import com.magicbeans.base.ajax.ResponseData;
 import com.magicbeans.happygo.controller.base.BaseController;
-import com.magicbeans.happygo.entity.Admin;
 import com.magicbeans.happygo.entity.User;
 import com.magicbeans.happygo.exception.InterfaceCommonException;
 import com.magicbeans.happygo.redis.RedisService;
-import com.magicbeans.happygo.service.IAdminService;
 import com.magicbeans.happygo.service.IIncomeDetailService;
 import com.magicbeans.happygo.service.IUserService;
 import com.magicbeans.happygo.sms.SMSCode;
@@ -17,8 +14,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
