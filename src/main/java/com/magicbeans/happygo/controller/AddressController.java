@@ -42,7 +42,9 @@ public class AddressController extends BaseController {
         try {
             User currentUser = LoginHelper.getCurrentUser(redisService);
             Address defaultAddress = addressService.getDefaultAddress(currentUser.getId());
-            defaultAddress.setCityName(CommonUtil.formatCityName(defaultAddress.getCityName()));
+            if (null != defaultAddress) {
+                defaultAddress.setCityName(CommonUtil.formatCityName(defaultAddress.getCityName()));
+            }
             return buildSuccessJson(StatusConstant.SUCCESS_CODE, "获取成功",
                     defaultAddress);
         } catch (InterfaceCommonException e) {

@@ -111,11 +111,12 @@ public class ShopCarController extends BaseController {
 
     @RequestMapping(value = "/getShopCar", method = RequestMethod.POST)
     @ApiOperation(value = "获取购物车")
-    public ResponseData getShopCar() {
+    @ApiImplicitParam(name = "shopCardIds",value = "购物车ID集合，以逗号隔开")
+    public ResponseData getShopCar(String shopCardIds) {
         try {
             User currentUser = LoginHelper.getCurrentUser(redisService);
             return buildSuccessJson(StatusConstant.SUCCESS_CODE, "操作成功",
-                    shopCarService.getShopCar(currentUser.getId()));
+                    shopCarService.getShopCar(currentUser.getId(),shopCardIds));
         } catch (InterfaceCommonException e) {
             return buildFailureJson(e.getErrorCode(), e.getMessage());
         } catch (Exception e) {

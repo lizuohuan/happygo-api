@@ -93,7 +93,7 @@ public class OrderController extends BaseController {
     @RequestMapping(value = "/addOrder",method = RequestMethod.POST)
     @ApiOperation(value = "新增订单")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "shopCarIds",value = "订单ID集合",required = true),
+            @ApiImplicitParam(name = "shopCarIds",value = "购物车ID集合",required = true),
             @ApiImplicitParam(name = "addressId",value = "地址ID",required = true)
     })
     public ResponseData addOrder(String shopCarIds,String addressId){
