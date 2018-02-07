@@ -133,13 +133,14 @@ public class AddressController extends BaseController {
         try {
             User currentUser = LoginHelper.getCurrentUser(redisService);
             addressService.addOrUpdate(address,currentUser.getId());
+            return buildSuccessJson(StatusConstant.SUCCESS_CODE, "操作成功",address.getId());
         } catch (InterfaceCommonException e) {
             return buildFailureJson(e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return buildFailureJson(StatusConstant.Fail_CODE, "操作失败");
         }
-        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE, "操作成功");
+
     }
 
 
