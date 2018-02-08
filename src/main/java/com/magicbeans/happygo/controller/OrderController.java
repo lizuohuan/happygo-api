@@ -305,6 +305,37 @@ public class OrderController extends BaseController {
     }
 
 
+    @RequestMapping(value = "/confirmOrder",method = RequestMethod.POST)
+    @ApiOperation(value = "确认收货")
+    @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)
+    public ResponseData confirmOrder(String orderId){
+        if(CommonUtil.isEmpty(orderId)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            Order order = orderService.find(orderId);
+            if(null == order){
+                return buildFailureJson(StatusConstant.OBJECT_NOT_EXIST,"订单不存在");
+            }
+            if(!currentUser.getId().equals(order.getUserId())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
+            }
+            if(!StatusConstant.ORDER_SENT.equals(order.getStatus())){
+                return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
+            }
+            order.setStatus(StatusConstant.ORDER_FINISHED);
+            orderService.update(order);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"处理失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"处理成功");
+    }
+
+
     @RequestMapping(value = "/refundOrder",method = RequestMethod.POST)
     @ApiOperation(value = "申请退款")
     @ApiImplicitParam(name = "orderId",value = "订单ID",required = true)

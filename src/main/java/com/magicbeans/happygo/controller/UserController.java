@@ -42,6 +42,55 @@ public class UserController extends BaseController {
     private IIncomeDetailService incomeDetailService;
 
 
+
+    @RequestMapping(value = "/applyAgent",method = RequestMethod.POST)
+    @ApiOperation(value = "申请成为代理商")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "realName",value = "姓名",required = true),
+            @ApiImplicitParam(name = "businessPhone",value = "电话",required = true),
+            @ApiImplicitParam(name = "idCard",value = "身份证",required = true),
+            @ApiImplicitParam(name = "idNumberAttachment",value = "身份证附件",required = true),
+            @ApiImplicitParam(name = "legalPerson",value = "法人代表"),
+            @ApiImplicitParam(name = "businessLicenseNumber",value = "营业执照号码"),
+            @ApiImplicitParam(name = "businessLicenseImg",value = "营业执照凭证"),
+            @ApiImplicitParam(name = "applyReason",value = "申请原因",required = true)
+    })
+    public ResponseData applyAgent(String realName,String businessPhone,String idCard,String idNumberAttachment,
+                                   String legalPerson,String businessLicenseNumber,String businessLicenseImg,
+                                   String applyReason){
+
+        if(CommonUtil.isEmpty(realName,businessPhone,idCard,idNumberAttachment,applyReason)){
+            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
+        }
+        try {
+            User currentUser = LoginHelper.getCurrentUser(redisService);
+            // 代理商申请
+            User agent = new User();
+            agent.setId(currentUser.getId());
+            agent.setRealName(realName);
+            agent.setBusinessPhone(businessPhone);
+            agent.setIdNumber(idCard);
+            agent.setIdNumberAttachment(idNumberAttachment);
+            agent.setLegalPerson(legalPerson);
+            agent.setBusinessLicenseNumber(businessLicenseNumber);
+            agent.setBusinessLicenseNumber(businessLicenseNumber);
+            agent.setBusinessLicenseImg(businessLicenseImg);
+            agent.setApplyReason(applyReason);
+            agent.setBusinessStatus(0);
+            userService.update(agent);
+            // 更新成功后，更新缓存
+            User sql = userService.find("id", agent.getId());
+            redisService.set(currentUser.getToken(),sql,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
+        } catch (InterfaceCommonException e) {
+            return buildFailureJson(e.getErrorCode(),e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(),e);
+            return buildFailureJson(StatusConstant.Fail_CODE,"申请失败");
+        }
+        return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"申请成功");
+    }
+
+
     @RequestMapping(value = "/sendCode",method = RequestMethod.POST)
     @ApiOperation(value = "注册发送验证码",notes = "验证码的正确性由服务端验证，移动端暂不用验证 ")
     @ApiImplicitParam(name = "phone",value = "手机号码" ,required = true)
@@ -106,8 +155,8 @@ public class UserController extends BaseController {
             userService.update(r);
         }
         String token = UUID.randomUUID().toString().replaceAll("-", "");
-        redisService.set(token,r,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
         r.setToken(token);
+        redisService.set(token,r,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
         userService.update(r);
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"注册成功",r);
     }
