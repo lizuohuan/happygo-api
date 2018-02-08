@@ -258,7 +258,8 @@ public class OrderController extends BaseController {
             if(!currentUser.getId().equals(order.getUserId())){
                 return buildFailureJson(StatusConstant.Fail_CODE,"订单异常");
             }
-            if(!StatusConstant.ORDER_FINISHED.equals(order.getStatus())){
+            if(!StatusConstant.ORDER_FINISHED.equals(order.getStatus())
+                    && !StatusConstant.ORDER_CANCEL.equals(order.getStatus())){
                 return buildFailureJson(StatusConstant.Fail_CODE,"订单状态异常");
             }
             order.setUserIsValid(StatusConstant.NO);
