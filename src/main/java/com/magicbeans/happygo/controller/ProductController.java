@@ -81,24 +81,21 @@ public class ProductController extends BaseController {
 
 
 
-
-
-
-
     @RequestMapping(value = "/searchProduct",method = RequestMethod.POST)
     @ApiOperation(value = "搜索商品列表")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "productName",value = "商品名称"),
+            @ApiImplicitParam(name = "categoryId",value = "商品分类ID"),
             @ApiImplicitParam(name = "pageNO",value = "分页参数",required = true),
             @ApiImplicitParam(name = "pageSize",value = "分页参数",required = true)
     })
-    public ResponseData searchProduct(String productName,Integer pageNO,Integer pageSize){
+    public ResponseData searchProduct(String productName,Integer pageNO,Integer pageSize,String categoryId){
        if(CommonUtil.isEmpty(pageNO,pageSize)){
            return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
        }
         productName = CommonUtil.isEmpty(productName) ? null : productName;
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
-                productService.searchProduct(productName, pageNO, pageSize));
+                productService.searchProduct(productName, pageNO, pageSize,categoryId));
     }
 
 
