@@ -302,7 +302,7 @@ public class UserController extends BaseController {
 
 
 
-    @RequestMapping(value = "shareCodeRegister",method = RequestMethod.POST)
+    @RequestMapping(value = "/shareCodeRegister",method = RequestMethod.POST)
     @ApiOperation(value = "分享页注册提交")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "shareCode",value = "邀请码",required = true),
@@ -313,7 +313,6 @@ public class UserController extends BaseController {
         if(CommonUtil.isEmpty(shareCode,phone)){
             return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数错误");
         }
-
         User user = userService.getUserByShareCode(shareCode);
         if(null == user){
             return buildFailureJson(StatusConstant.Fail_CODE,"邀请码错误");
@@ -337,6 +336,14 @@ public class UserController extends BaseController {
         return buildSuccessCodeJson(StatusConstant.SUCCESS_CODE,"提交成功");
     }
 
+
+
+    @RequestMapping(value = "/countLastDay",method = RequestMethod.POST)
+    @ApiOperation(value = "统计昨日数据集合 积分(score)、欢喜券(bigDecimal)、单元总量(暂无)、转化率(parities)")
+    public ResponseData countLastDay(){
+        return buildSuccessJson(StatusConstant.SUCCESS_CODE,"提交成功",
+                userService.countLastDay());
+    }
 
 
 
