@@ -100,7 +100,7 @@ public class UserController extends BaseController {
             return buildFailureJson(StatusConstant.FIELD_NOT_NULL,"参数不能为空");
         }
         User user = userService.getUserByPhone(phone);
-        if(null != user){
+        if(null != user && !CommonUtil.isEmpty(user.getPwd())){
             return buildFailureJson(StatusConstant.OBJECT_EXIST,"手机号已经存在");
         }
         String code = SMSCode.createRandomCode();
@@ -318,6 +318,9 @@ public class UserController extends BaseController {
             return buildFailureJson(StatusConstant.Fail_CODE,"邀请码错误");
         }
         User userPhone = userService.getUserByPhone(phone);
+        if (userPhone.getPhone().equals(phone)) {
+            return buildFailureJson(StatusConstant.Fail_CODE,"自己不能成为自己的分销商");
+        }
         if(null != userPhone && !CommonUtil.isEmpty(userPhone.getParentId())){
             return buildFailureJson(StatusConstant.Fail_CODE,"已经提交过");
         }
