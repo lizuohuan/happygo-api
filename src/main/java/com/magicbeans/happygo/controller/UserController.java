@@ -216,8 +216,8 @@ public class UserController extends BaseController {
             redisService.remove(user.getToken());
         }
         String token = UUID.randomUUID().toString().replaceAll("-", "");
-        redisService.set(token,user,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
         user.setToken(token);
+        redisService.set(token,user,StatusConstant.LOGIN_VALID,TimeUnit.DAYS);
         userService.update(user);
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"登录成功",user);
     }
