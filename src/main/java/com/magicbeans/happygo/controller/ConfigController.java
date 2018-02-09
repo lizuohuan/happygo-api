@@ -28,7 +28,7 @@ public class ConfigController extends BaseController {
     @ApiOperation(value = "获取全局配置")
     public ResponseData getConfig(){
         return buildSuccessJson(StatusConstant.SUCCESS_CODE,"获取成功",
-                systemConfigService.findAll().get(0));
+                systemConfigService.getSystemConfig());
     }
 
 }
