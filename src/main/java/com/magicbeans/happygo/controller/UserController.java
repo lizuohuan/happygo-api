@@ -317,10 +317,10 @@ public class UserController extends BaseController {
         if(null == user){
             return buildFailureJson(StatusConstant.Fail_CODE,"邀请码错误");
         }
-        User userPhone = userService.getUserByPhone(phone);
-        if (userPhone.getPhone().equals(phone)) {
+        if (null != user.getPhone() && user.getPhone().equals(phone)) {
             return buildFailureJson(StatusConstant.Fail_CODE,"自己不能成为自己的分销商");
         }
+        User userPhone = userService.getUserByPhone(phone);
         if(null != userPhone && !CommonUtil.isEmpty(userPhone.getParentId())){
             return buildFailureJson(StatusConstant.Fail_CODE,"已经提交过");
         }
